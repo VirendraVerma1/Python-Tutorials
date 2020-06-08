@@ -22,7 +22,7 @@ li_description=[]
 def callsa(rangea):
     for j in range(rangea,rangea+difference):
         print("Page ",j)
-        r=requests.get("https://yts.mx/browse-movies?page="+str(j));
+        r=requests.get("https://yts.mx/browse-movies/0/all/all/0/latest/2020/all?page="+str(j));
         c=r.content
         soup=BeautifulSoup(c,"html.parser")
         for i in range(0,19):
