@@ -20,10 +20,10 @@ li_trailer=[]
 li_description=[]
 
 def callsa(rangea):
-    for j in range(2,50):
+    for j in range(8,50):
         print("Page ",j)
-        #r=requests.get("https://yts.mx/browse-movies/0/all/all/0/rating/0/all");
-        r=requests.get("https://yts.mx/browse-movies/0/all/all/0/rating/2018/all?page="+str(j));
+        #r=requests.get("https://yts.mx/browse-movies");
+        r=requests.get("https://yts.mx/browse-movies?page="+str(j));
         c=r.content
         soup=BeautifulSoup(c,"html.parser")
         for i in range(0,19):
