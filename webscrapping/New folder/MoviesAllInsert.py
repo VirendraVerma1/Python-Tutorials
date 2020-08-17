@@ -20,7 +20,7 @@ li_trailer=[]
 li_description=[]
 
 def callsa(rangea):
-    for j in range(8,50):
+    for j in range(1,10):
         print("Page ",j)
         #r=requests.get("https://yts.mx/browse-movies");
         r=requests.get("https://yts.mx/browse-movies?page="+str(j));

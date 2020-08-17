@@ -54,11 +54,11 @@ while(yy>0):
             imageFilename.append(fileNAAM)
     
             #------------------------------applying filters
-            #image=Image.open(r"D:/ServerData/Images/"+fileNAAM)
+            image=Image.open(r"D:/ServerData/Images/"+fileNAAM)
             #image = image.convert('1')
-            #image=image.filter(ImageFilter.SHARPEN)
+            image=image.filter(ImageFilter.SHARPEN)
             #image=image.filter(ImageFilter.EDGE_ENHANCE_MORE)
-            #image.save("D:/ServerData/Images/"+fileNAAM)
+            image.save("D:/ServerData/Images/"+fileNAAM)
             
             #-------------------------------creating pdf
             filename=FilePath+fileNAAM
@@ -78,8 +78,7 @@ while(yy>0):
         merger.close()
         
         #-----------------------------send and change the pdf make values--------------
-        print("Group Id",groupidi)
-        print("User ID",idi)
+        
         url="https://kreasarapps.000webhostapp.com/CamScanner/uploadpdf.php"
         filess={
             'theFile' : open('D:/ServerData/Pdf/MergedPdf/merged.pdf','rb')
@@ -93,14 +92,16 @@ while(yy>0):
         #---------------------------delete files---------------------
         #--remove merged pdf
         
-        print("Removing")
+        
+        filess={}
+        r.close()
         
         filee = 'merged.pdf'
         locationn = "D:/ServerData/Pdf/MergedPdf/"
         path = os.path.join(locationn, filee) 
         
         os.remove(path)
-        print("works")
+        
         #remove all images
         for i in range(0,len(imageFilename)):
             os.remove("D:/ServerData/Images/"+imageFilename[i])
@@ -113,5 +114,5 @@ while(yy>0):
         print("All the files are removed")
     except Exception:
         pass
-    yy=0
-    time.sleep(3)
+    
+    time.sleep(4)
