@@ -61,4 +61,3 @@ while(len(li_symbol)>0):
                 break;
     print(li_num,li_symbol)
 print("Ans = ",li_num[0])
-123
