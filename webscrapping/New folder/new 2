@@ -1,0 +1,41 @@
+wap input a character check weather it is a vowel or not
+wap to input a number check and print wehter it is a 1) positive no 2) even no 3) buzz no
+wap to input 
+
+import java.util.Scanner;
+public class Main
+{
+    public static void main(String args[])
+    {
+        Scanner s= new Scanner(System.in);
+        System.out.println("enter a number");
+        int a =s.nextInt();
+        System.out.println("enter a caes 1 for positive or negative");
+        System.out.println("enter a caes 2 for even or odd");
+        System.out.println("enter a caes 3 for buzz no. or not");
+        int j =s.nextInt();
+        switch (j)
+        {
+            case 1:
+                if(a>0)
+                System.out.println("posetive number");
+                else
+                System.out.println("negative number");
+                break;
+            case 2:
+                if(a%2==0)
+                System.out.println("even number");
+                else
+                System.out.println("odd number");
+                break;
+            case 3:
+                if(a%7==0)
+                System.out.println("buzz number");
+                else
+                System.out.println("not a buzz number");
+                break;
+            default:
+            System.out.println("invalid number");
+        }
+    }
+}
