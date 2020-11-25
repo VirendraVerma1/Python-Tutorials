@@ -2,8 +2,8 @@ import requests
 import threading
 from bs4 import BeautifulSoup
 for j in range(1,30):
-    print("Page",j)
-    r=requests.get("https://8movierulz.sx/category/multi-audio-dubbed-movies/page/"+str(j)+"/");
+    print("Page",j,"------------------------------------------------------------")
+    r=requests.get("https://4movierulz.es/category/multi-audio-dubbed-movies/page/"+str(j)+"/");
     c=r.content
     soup=BeautifulSoup(c,"html.parser")
     for i in range(len(soup.find_all("div",{"class":"boxed film"}))-2):
@@ -101,8 +101,8 @@ for j in range(1,30):
         else:
             moviefloatrate=float(movieRating)
         if(not movieMagnetLink=="No Data"):
-            #url = 'http://localhost/Movies/Dubbed/insert.php'
-            url="https://torrentodownloader.000webhostapp.com/Movies/Dubbed/insert.php"
+            url = 'http://localhost/Movies/Dubbed/insert.php'
+            #url="https://torrentodownloader.000webhostapp.com/Movies/Dubbed/insert.php"
             myobj = {'name': movieName,'year': int(movieYear[0]),'description': movieDiscription,
                      'rating': moviefloatrate,'category': movieGenre,'image': moviePoster,
                      'torrent': movieMagnetLink,'sizecompany': movieSizeComapny,'size': movieSize,
