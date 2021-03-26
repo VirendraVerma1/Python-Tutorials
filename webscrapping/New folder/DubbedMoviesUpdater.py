@@ -1,11 +1,19 @@
 import requests
 import threading
 from bs4 import BeautifulSoup
-for j in range(1,30):
+from fake_useragent import UserAgent
+import random
+
+proxies = { 'http': "socks4://210.245.51.1:4145", 
+            'https': "socks4://210.245.51.1:4145"}
+
+
+for j in range(2,30):
     print("Page",j,"------------------------------------------------------------")
-    r=requests.get("https://4movierulz.es/category/multi-audio-dubbed-movies/page/"+str(j)+"/");
+    r=requests.get("https://4movierulz.es/category/multi-audio-dubbed-movies/page/"+str(j)+"/", proxies=proxies);
     c=r.content
     soup=BeautifulSoup(c,"html.parser")
+    print(soup)
     for i in range(len(soup.find_all("div",{"class":"boxed film"}))-2):
         #---------------------------------get Link--------------
         movieLink=soup.find_all("div",{"class":"boxed film"})[i+2].a.get('href')
