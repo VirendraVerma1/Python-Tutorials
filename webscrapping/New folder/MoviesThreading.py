@@ -138,9 +138,8 @@ def callsa(rangea):
    
 
 
-rangeMax=870
-rangeMin=1
-rangeCompleted=1
+
+rangeCompleted=205
 #callsa(rangeCompleted)
 difference=3
 if __name__ == "__main__": 
