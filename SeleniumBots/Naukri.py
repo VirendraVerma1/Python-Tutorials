@@ -14,43 +14,46 @@ page = driver.execute_script('return document.body.innerHTML')
 soup = BeautifulSoup(''.join(page), 'html.parser')
 jobs=soup.find_all("article",{"class":"jobTuple bgWhite br4 mb-8"})
 for i in jobs:
-    jobname=i.find("a", {"class": "title fw500 ellipsis"}).text
-    jobcompany=i.find("a", {"class": "subTitle ellipsis fleft"}).text
-    jobexperince=i.find("li", {"class": "fleft grey-text br2 placeHolderLi experience"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
-    jobpackage=i.find("li", {"class": "fleft grey-text br2 placeHolderLi salary"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
-    joblocation=i.find("li", {"class": "fleft grey-text br2 placeHolderLi location"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
-    jobkeyskill=i.find("ul",{"class":"tags has-description"}).find_all("li", {"class": "fleft fs12 grey-text lh16 dot"})
-    keySkills=[]
-    
-    skillString=""
-    for j in jobkeyskill:
-        keySkills.append(j.text)
-        skillString +=j.text+","
+    try:
+        jobname=i.find("a", {"class": "title fw500 ellipsis"}).text
+        jobcompany=i.find("a", {"class": "subTitle ellipsis fleft"}).text
+        jobexperince=i.find("li", {"class": "fleft grey-text br2 placeHolderLi experience"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
+        jobpackage=i.find("li", {"class": "fleft grey-text br2 placeHolderLi salary"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
+        joblocation=i.find("li", {"class": "fleft grey-text br2 placeHolderLi location"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
+        jobkeyskill=i.find("ul",{"class":"tags has-description"}).find_all("li", {"class": "fleft fs12 grey-text lh16 dot"})
+        keySkills=[]
         
-    joblink=i.find("a", {"class": "title fw500 ellipsis"}).get('href')
+        skillString=""
+        for j in jobkeyskill:
+            keySkills.append(j.text)
+            skillString +=j.text+","
+            
+        joblink=i.find("a", {"class": "title fw500 ellipsis"}).get('href')
 
-    print(joblink,jobname,jobcompany,jobexperince,jobpackage,joblocation,keySkills)
-    #url = 'https://kreasarapps.000webhostapp.com//Movies/insert.php'
-    url = 'http://localhost/placement/insertjob.php'
-    #url = 'https://torrentodownloader.000webhostapp.com/Movies/insert.php'
-    myobj = {'CompanyPhoto':"",'CompanyName': jobcompany,'Post': jobname,'Package': jobpackage,
-            'Experience': jobexperince,'Bond': "",'Location': joblocation,
-            'Role': "",'IndustyType': "",'FunctionalArea': "",
-            'EmploymentType': "",'RoleCategory': "",'Education': "",
-            'KeySkill': skillString,
-            'Responsibility': "",
-            'Knowledge': "",
-            'Benifit': "",
-            'AboutCompany': "",
-            'TotalEmployee': "",
-            'LastApplyDate': "",
-            'ApplyLink': joblink,
-            'Description': ""}
-    print(myobj)
-    x = requests.post(url, data = myobj)
-    print(x.text)
-    
-    print("")
+        print(joblink,jobname,jobcompany,jobexperince,jobpackage,joblocation,keySkills)
+        #url = 'https://kreasarapps.000webhostapp.com//Movies/insert.php'
+        url = 'http://localhost/placement/insertjob.php'
+        #url = 'https://torrentodownloader.000webhostapp.com/Movies/insert.php'
+        myobj = {'CompanyPhoto':"",'CompanyName': jobcompany,'Post': jobname,'Package': jobpackage,
+                'Experience': jobexperince,'Bond': "",'Location': joblocation,
+                'Role': "",'IndustyType': "",'FunctionalArea': "",
+                'EmploymentType': "",'RoleCategory': "",'Education': "",
+                'KeySkill': skillString,
+                'Responsibility': "",
+                'Knowledge': "",
+                'Benifit': "",
+                'AboutCompany': "",
+                'TotalEmployee': "",
+                'LastApplyDate': "",
+                'ApplyLink': joblink,
+                'Description': ""}
+        print(myobj)
+        x = requests.post(url, data = myobj)
+        print(x.text)
+        
+        print("")
+    except Exception:
+        pass
 
 
 driver.close()
