@@ -6,7 +6,7 @@ import time
 #----------------------first page------------
 #url="https://www.naukri.com/jobs-in-lucknw?l=lucknw&cityTypeGid=216"
 #url="https://www.naukri.com/jobs-in-mumbai?l=mumbai"
-url='https://www.naukri.com/jobs-in-bangalore-bengaluru?jobAge=1&l=bangalore%2Fbengaluru&cityTypeGid=6&cityTypeGid=17&cityTypeGid=58&cityTypeGid=72&cityTypeGid=73&cityTypeGid=97&cityTypeGid=105&cityTypeGid=134&cityTypeGid=135&cityTypeGid=138&cityTypeGid=139&cityTypeGid=183&cityTypeGid=187&cityTypeGid=213&cityTypeGid=220&cityTypeGid=242&cityTypeGid=323&cityTypeGid=325&cityTypeGid=349&cityTypeGid=350&cityTypeGid=469&cityTypeGid=505&cityTypeGid=546&cityTypeGid=556&cityTypeGid=9508&cityTypeGid=9509'
+url='https://www.naukri.com/jobs-in-bangalore-bengaluru?l=bangalore%2Fbengaluru&jobAge=1&cityTypeGid=6&cityTypeGid=17&cityTypeGid=58&cityTypeGid=72&cityTypeGid=73&cityTypeGid=97&cityTypeGid=105&cityTypeGid=134&cityTypeGid=135&cityTypeGid=138&cityTypeGid=139&cityTypeGid=183&cityTypeGid=187&cityTypeGid=213&cityTypeGid=220&cityTypeGid=242&cityTypeGid=323&cityTypeGid=325&cityTypeGid=349&cityTypeGid=350&cityTypeGid=469&cityTypeGid=505&cityTypeGid=546&cityTypeGid=556&cityTypeGid=9508&cityTypeGid=9509&experience=0'
 driver = webdriver.Firefox(executable_path="D:\\Programs\\Python-Tutorials\\SeleniumBots\\Driver\\geckodriver.exe")
 driver.get(url)
 time.sleep(5)
