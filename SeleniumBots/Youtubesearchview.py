@@ -23,7 +23,7 @@ while(n>0):
     #viedeo=driver.find_elements_by_id("video-title")[0]
     #viedeo.click()
    
-    #WebDriverWait(driver,30).until(EC.title_contains(serchItem))
+    #WebDriverWait(driver,30).until(EC.title_contains(serchItem))style-scope ytd-video-renderer
     WebDriverWait(driver,60).until(EC.element_to_be_clickable((By.ID,"img"))).click()
     
     time.sleep(60)
