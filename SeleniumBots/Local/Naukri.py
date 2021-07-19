@@ -10,11 +10,15 @@ url='https://www.naukri.com/jobs-in-bangalore-bengaluru?l=bangalore%2Fbengaluru&
 driver = webdriver.Firefox(executable_path="D:\\Programs\\Python-Tutorials\\SeleniumBots\\Driver\\geckodriver.exe")
 driver.get(url)
 time.sleep(5)
+driver.find_element_by_xpath('//*[@id="root"]/div[3]/div[2]/section[2]/div[1]/div/span[2]/p').click()
+driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[2]/section[2]/div[1]/div/span[2]/ul/li[2]').click()
+time.sleep(5)
 page = driver.execute_script('return document.body.innerHTML')
 soup = BeautifulSoup(''.join(page), 'html.parser')
+
 jobs=soup.find_all("article",{"class":"jobTuple bgWhite br4 mb-8"})
 for i in jobs:
-    try:
+    #try:
         jobname=i.find("a", {"class": "title fw500 ellipsis"}).text
         jobcompany=i.find("a", {"class": "subTitle ellipsis fleft"}).text
         jobexperince=i.find("li", {"class": "fleft grey-text br2 placeHolderLi experience"}).find("span", {"class": "ellipsis fleft fs12 lh16"}).text
@@ -52,8 +56,8 @@ for i in jobs:
         print(x.text)
         
         print("")
-    except Exception:
-        pass
+    #except Exception:
+        #pass
 
 
 driver.close()
