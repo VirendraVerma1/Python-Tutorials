@@ -6,12 +6,16 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+
 
 n=20
 while(n>0):
     serchItem="kreasaar paper in trash"
     url='https://www.youtube.com'
-    driver = webdriver.Chrome(executable_path="D:\\Programs\\Python-Tutorials\\SeleniumBots\\Driver\\chromedriver.exe")
+    option=webdriver.ChromeOptions()
+    option.add_argument('headless')
+    driver = webdriver.Chrome(executable_path="D:\\Programs\\Python-Tutorials\\SeleniumBots\\Driver\\chromedriver.exe",chrome_options=option)
     driver.get(url)
     driver.set_window_size(1024, 600)
     driver.maximize_window()
@@ -32,3 +36,4 @@ while(n>0):
     time.sleep(65)
     driver.close()
     driver.quit()
+    
