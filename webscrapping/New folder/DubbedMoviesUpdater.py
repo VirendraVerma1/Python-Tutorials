@@ -115,6 +115,6 @@ for j in range(2,30):
                      'torrent': movieMagnetLink,'sizecompany': movieSizeComapny,'size': movieSize,
                      'screenshot1': Screenshot1,'screenshot2': Screenshot2,'screenshot3': Screenshot3,
                      'trailer': movieTrailer,'language':movietest2[0]}
-            x = requests.post(url, data = myobj)
-            print(x.text)
+            #x = requests.post(url, data = myobj)
+            #print(x.text)
         print("\n\n")
