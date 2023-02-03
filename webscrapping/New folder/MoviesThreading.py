@@ -111,7 +111,7 @@ def callsa(rangea):
                 li_Name.append(movieName)
                 li_Year.append(int(movieYear))
                 splitrating=movieRating.split('/')
-                print(splitrating[0])
+                
                 li_Rating.append(float(splitrating[0]))
                 li_Category.append(movieCategory)
                 li_Image.append(movieImage)
@@ -132,8 +132,8 @@ def callsa(rangea):
                          'torrent': movieTorrent,'sizecompany': movieSizeComapny,'size': movieSize,
                          'screenshot1': Screenshot1,'screenshot2': Screenshot2,'screenshot3': Screenshot3,
                          'trailer': movieTrailer}
-                x = requests.post(url, data = myobj)
-                print(x.text)
+                #x = requests.post(url, data = myobj)
+                #print(x.text)
                 
    
 

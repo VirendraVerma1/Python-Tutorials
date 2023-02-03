@@ -4,15 +4,15 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import random
 
-for j in range(2,30):
+for j in range(0,30):
     print("Page",j,"------------------------------------------------------------")
-    r=requests.get("https://4movierulz.es/category/multi-audio-dubbed-movies/page/"+str(j)+"/");
+    r=requests.get("https://ww25.4movierulz.nl/language/hindi-dubbed/page/"+str(j)+"/");
     c=r.content
     soup=BeautifulSoup(c,"html.parser")
     
-    for i in range(len(soup.find_all("div",{"class":"boxed film"}))-2):
+    for i in soup.find_all("div",{"class":"boxed film"}):
         #---------------------------------get Link--------------
-        movieLink=soup.find_all("div",{"class":"boxed film"})[i+2].a.get('href')
+        movieLink=i.find("a").get('href')
         print(movieLink)
         
         #-------------------------------get magnet Link------------
@@ -20,11 +20,17 @@ for j in range(2,30):
         cc=re.content
         soupp=BeautifulSoup(cc,"html.parser")
         movieMagnetLink="No Data"
-        movieMagnetLink=soupp.find_all("a",{"class":"mv_button_css"})[0].get('href')
+        if(len(soupp.find_all("a",{"class":"mv_button_css"})) > 0):
+            movieMagnetLink=soupp.find_all("a",{"class":"mv_button_css"})[0].get('href')
+        else:
+            movieMagnetLink=""
         #print(movieMagnetLink)
         
         #------------------------------get movie size-----------------
-        movieSize=soupp.find_all("a",{"class":"mv_button_css"})[0].find_all("small")[0].text
+        if(len(soupp.find_all("a",{"class":"mv_button_css"})) > 0):
+            movieSize=soupp.find_all("a",{"class":"mv_button_css"})[0].find_all("small")[0].text
+        else:
+            movieSize="0"
         print(movieSize)
         
         #--------------------------get movie name--------------
@@ -44,13 +50,15 @@ for j in range(2,30):
         print(movieYear[0])
         
         #--------------------------get movie languages-----------
-        if(movieTitle.find("[") != -1):
+        """if(movieTitle.find("[") != -1):
             movietest=movieTitle.split("[")
             movietest2=movietest[1].split("]")
             movietest2[0]=movietest2[0].replace("+","|")
         else:
             movietest2[0]="No Data"
-        print(movietest2[0])
+        """
+        movietest2="Hindi"
+        print(movietest2)
         
         #--------------------------get movie poster--------------
         moviePoster=soupp.find_all("img",{"class":"attachment-post-thumbnail size-post-thumbnail wp-post-image"})[0].get('src')
@@ -114,7 +122,7 @@ for j in range(2,30):
                      'rating': moviefloatrate,'category': movieGenre,'image': moviePoster,
                      'torrent': movieMagnetLink,'sizecompany': movieSizeComapny,'size': movieSize,
                      'screenshot1': Screenshot1,'screenshot2': Screenshot2,'screenshot3': Screenshot3,
-                     'trailer': movieTrailer,'language':movietest2[0]}
+                     'trailer': movieTrailer,'language':movietest2}
             #x = requests.post(url, data = myobj)
             #print(x.text)
         print("\n\n")

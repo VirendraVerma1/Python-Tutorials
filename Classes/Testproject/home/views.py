@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from datetime import datetime
 from home.models import Contact
 from home.models import Blog,Tag
@@ -8,7 +8,7 @@ from django.contrib.auth import login,logout,authenticate
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 
-from home.forms import BlogFrom,TagForm
+from home.forms import BlogFrom,TagForm,CreateUserForm
 import json
 
 # Create your views here.
@@ -206,4 +206,34 @@ def submittag(request):
         return render(request, 'blogtagslist.html',context)
 
 #endregion
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
+def ajaxTest(request):
+    if is_ajax(request=request):
+        test=request.GET.get('text')
+        print(test)
+        return JsonResponse({"key":"Hello world","you":"world"},status=200)
+    
+    else:
+        return redirect("home")
+
+
+
+def registerPage(request):
+	if request.user.is_authenticated:
+		return redirect('home')
+	else:
+		form = CreateUserForm()
+		if request.method == 'POST':
+			form = CreateUserForm(request.POST)
+			if form.is_valid():
+				form.save()
+				user = form.cleaned_data.get('username')
+				messages.success(request, 'Account was created for ' + user)
+
+				return redirect('login')
+			
+
+		context = {'form':form}
+		return render(request, 'register.html', context)

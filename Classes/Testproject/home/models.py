@@ -25,6 +25,16 @@ class Blog(models.Model):
     # tags=models.ForeignKey(Tag,on_delete=models.CASCADE,verbose_name="My Tags",null=True,default=None)
 
 
+class TESTADMIN(models.Model):
+    name=models.CharField(max_length=122)
+    email=models.CharField(max_length=122)
+    phone=models.CharField(max_length=122)
+    desc=models.CharField(max_length=122)
+    date=models.DateField()
 
-
+# class TempUser(models.Model):
+#     first_name = models.CharField(max_length=100)
+#     . . .
+#     class Meta:
+#         db_table = "temp_user"
     
