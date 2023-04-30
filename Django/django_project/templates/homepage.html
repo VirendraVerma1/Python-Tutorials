@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Employees</title>
+</head>
+<body>
+    {{s|safe}}
+    <div id="menu">
+        <div><a href="#">View Employees</a></div>
+        <div><a href="#">New Employee</a></div>
+        <div><a href="#">Logout</a></div>
+    </div>
+    <div>
+        <table width="600px">
+            <tr>
+                <td>Emp no.</td>
+                <td>Name</td>
+                
+            </tr>
+            {% for i in li %}
+            <tr>
+                <td><a href= "#">{{i}}</a> </td>
+                <td><a href= "#">Delete</a> </td>
+            </tr>
+            {% endfor %}
+
+        </table>
+    
+</body>
+</html>

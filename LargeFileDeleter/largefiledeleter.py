@@ -4,7 +4,8 @@ from fnmatch import fnmatch
 
 #ingo
 # folder_path="D:\\Programs\\Python-Tutorials\\LargeFileDeleter\\Placement-Prepration\\Placement Prepration"
-folder_path="D:\\Tesseract"
+#folder_path="D:\\Tesseract\\BandookDhari"
+folder_path="D:\\Tesseract\\Validation\\Vertigo"
 
 for path, subdirs, files in os.walk(folder_path):
     for name in files:
