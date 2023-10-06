@@ -47,7 +47,7 @@ cap = cv2.VideoCapture(video_path)
 #crop the video for every next 2 seconds. extract the frames and create paranoma, when its done then
 # Parameters for resizing and merging frames
 scale_factor = 1/3  # Resize frames to one third of the resolution
-interval = 0.1  # Interval in seconds
+interval = 0.2  # Interval in seconds
 
 frames = []
 frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
@@ -66,7 +66,7 @@ while cap.isOpened():
     # Append resized frame to the frames list
     frames.append(resized_frame)
 
-    if(len(frames)>5):
+    if(len(frames)>9):
         # Create the 360-degree image
         print("merging images "+str(i),len(frames))
         i=i+1
@@ -75,7 +75,9 @@ while cap.isOpened():
         if(merged_image is not None):
             last_pan_image=merged_image
             cv2.imwrite("360_image.jpg", last_pan_image)
-        strittchedImages.append(merged_image)
+            frames.append(merged_image)
+        else:
+            strittchedImages.append(merged_image)
         time.sleep(5)
 
 
@@ -88,7 +90,7 @@ i=0
 for j in strittchedImages:
     frame=resize_frame(j,scale_factor)
     frames.append(frame)
-    if(len(frames)>5):
+    if(len(frames)>1):
         # Create the 360-degree image
         print("merging images "+str(i),len(frames))
         i=i+1
