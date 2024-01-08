@@ -5,6 +5,9 @@ from keras.preprocessing import image as keras_image
 from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.optimizers import Adam
+from keras.layers import Conv2D, MaxPooling2D, Dropout
+from keras.layers import BatchNormalization
+from keras.preprocessing.image import ImageDataGenerator
 
 # Get all the fonts under "Fonts" folder
 fonts = os.listdir("Fonts")
@@ -53,19 +56,40 @@ for font_name in ttf_fonts:
 # Normalize image data
 X_train /= 255
 
-# Define a simple model
+# Define a more complex model
 model = Sequential()
-model.add(Flatten(input_shape=(100, 100, 3)))
-model.add(Dense(128, activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(100, 100, 3)))
+model.add(BatchNormalization())
+model.add(MaxPooling2D((2, 2)))
+model.add(Dropout(0.25))
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D((2, 2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+model.add(BatchNormalization())
+model.add(Dropout(0.5))
 model.add(Dense(26, activation='softmax'))  # 26 classes for 26 letters
 
-# Compile the model
+# Compile the model with a smaller learning rate
 model.compile(loss='sparse_categorical_crossentropy',
-              optimizer=Adam(),
+              optimizer=Adam(learning_rate=0.0001),
               metrics=['accuracy'])
 
-# Train the model
-model.fit(X_train, y_train, epochs=10, batch_size=32)
+# Create an ImageDataGenerator for data augmentation
+datagen = ImageDataGenerator(
+    rotation_range=10,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
+    zoom_range=0.1,
+    fill_mode='nearest')
+
+# Train the model for more epochs with data augmentation
+model.fit(datagen.flow(X_train, y_train, batch_size=32),
+          steps_per_epoch=len(X_train) / 32,
+          epochs=100)
 
 # Save the trained model
 model.save('character_model.h5')
