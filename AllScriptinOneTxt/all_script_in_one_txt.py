@@ -1,7 +1,7 @@
 import os
 
 # Base directory where to start searching for .cs files
-base_directory = "D:\\Programs\\Unity\\JellyPuzzle\\Assets"
+base_directory = "D:\\Programs\\Unity\\UnityMARSBodyTracking-master\\Assets\\MARS"
 
 # Path of the file where to save the project information
 output_file_path = os.path.join(base_directory, "project.txt")
