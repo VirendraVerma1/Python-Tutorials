@@ -95,7 +95,7 @@ def create_short_video(video_path, output_path, clips):
 
 def main():
     # Paths
-    input_video = "input_long_video.mp4"  # Replace with your input video path
+    input_video = "videoplayback.mp4"  # Replace with your input video path
     extracted_audio = "extracted_audio.wav"
     output_video = "youtube_short.mp4"
     
