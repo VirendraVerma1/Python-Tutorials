@@ -1,17 +1,14 @@
 import os
-import requests
-from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
 import shutil
-import concurrent.futures
-from moviepy.config import change_settings
-import random  # **Added import for shuffling**
+from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
+from yt_dlp import YoutubeDL
 
 # Optional: Specify FFmpeg binary if not in PATH
+# from moviepy.config import change_settings
 # change_settings({"FFMPEG_BINARY": "/path/to/ffmpeg"})
 
 # Configuration
-PIXABAY_API_KEY = '47743649-5733ba1681a60793a017da96b'  # Replace with your Pixabay API Key
-VIDEOS_PER_TAG = 30  # Number of videos to download per tag
+VIDEOS_PER_TAG = 20  # Number of videos to download per tag
 MP3_FILES_DIR = 'mp3files'  # Directory containing MP3 files
 OUTPUT_VIDEO_DIR = 'output_video'  # Directory to save the final videos
 TEMP_VIDEO_DIR = 'temp_videos'  # Temporary directory for downloaded videos
@@ -28,11 +25,10 @@ FFMPEG_CODEC_PARAMS = {
     # 'preset_flags': 'low_delay',  # Removed to fix TypeError
 }
 
-def search_and_download_videos(api_key, tag, videos_per_tag, download_path):
+def search_and_download_videos(tag, videos_per_tag, download_path):
     """
-    Searches for videos on Pixabay based on a single tag and downloads them.
+    Searches YouTube for videos matching the tag with Creative Commons license and downloads them.
 
-    :param api_key: Pixabay API key.
     :param tag: Tag to search for.
     :param videos_per_tag: Number of videos to download.
     :param download_path: Directory to save downloaded videos.
@@ -40,65 +36,55 @@ def search_and_download_videos(api_key, tag, videos_per_tag, download_path):
     if not os.path.exists(download_path):
         os.makedirs(download_path)
 
-    base_url = 'https://pixabay.com/api/videos/'
-    all_video_urls = []
+    # Use ytsearch with the desired number of videos
+    search_query = f"ytsearch{videos_per_tag * 2}:{tag}"  # Fetch more results to account for filtering
+    print(f"\n🔍 Searching YouTube for tag: '{tag}' with query: '{search_query}'")
 
-    params = {
-        'key': api_key,
-        'q': tag,
-        'per_page': videos_per_tag,
-        'safesearch': 'true'
-    }
-    print(f"Fetching videos for tag: '{tag}'")
-    response = requests.get(base_url, params=params)
-    print(f"Request URL: {response.url}")
-    if response.status_code != 200:
-        print(f"Failed to fetch videos for tag '{tag}'. Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
-        return
+    def is_cc_license(info):
+        """
+        Filters videos to include only those with Creative Commons license.
 
-    data = response.json()
-    if 'hits' not in data:
-        print(f"No 'hits' found in the response for tag '{tag}'. Response: {data}")
-        return
-
-    for hit in data.get('hits', []):
-        # Select the video with the highest resolution available
-        videos = hit.get('videos', {})
-        if 'large' in videos:
-            video_url = videos['large']['url']
-        elif 'medium' in videos:
-            video_url = videos['medium']['url']
-        elif 'small' in videos:
-            video_url = videos['small']['url']
-        else:
-            print(f"No suitable video size found for hit ID {hit.get('id')}")
-            continue  # Skip if no suitable video size found
-        all_video_urls.append(video_url)
-
-    if not all_video_urls:
-        print(f"No video URLs found for tag '{tag}'. Please check your tags and API key.")
-        return
-
-    print(f"Found {len(all_video_urls)} videos for tag '{tag}'. Starting download...")
-
-    def download_video(idx_url):
-        idx, url = idx_url
-        try:
-            response = requests.get(url, stream=True)
-            if response.status_code == 200:
-                video_path = os.path.join(download_path, f'video_{idx}.mp4')
-                with open(video_path, 'wb') as f:
-                    shutil.copyfileobj(response.raw, f)
-                print(f"Downloaded: {video_path}")
+        :param info: Video information dictionary.
+        :return: True if the video has a Creative Commons license, False otherwise.
+        """
+        license_info = info.get('license')
+        title = info.get('title', 'Unknown Title')
+        
+        if isinstance(license_info, str):
+            if 'creative commons' in license_info.lower():
+                print(f"✅ Video '{title}' has a Creative Commons license.")
+                return True
             else:
-                print(f"Failed to download video from {url}. Status Code: {response.status_code}")
-        except Exception as e:
-            print(f"Error downloading video from {url}: {e}")
+                print(f"❌ Video '{title}' does not have a Creative Commons license.")
+                return False
+        else:
+            print(f"❌ Video '{title}' does not have a license field or it's not a string.")
+            return False
 
-    # Use ThreadPoolExecutor to download videos in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        executor.map(download_video, enumerate(all_video_urls, start=1))
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
+        'outtmpl': os.path.join(download_path, f'{tag}_%(id)s.%(ext)s'),
+        'noplaylist': True,
+        'quiet': False,  # Set to False to see yt-dlp logs; set to True to hide
+        'ignoreerrors': True,
+        'no_warnings': True,
+        'retries': 3,
+        'extract_flat': False,  # Set to False to retrieve full video info
+        'match_filter': is_cc_license,
+        # 'postprocessors': [{
+        #     'key': 'FFmpegVideoConvertor',
+        #     'preferredformat': 'mp4',  # Corrected spelling here
+        # }],
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        try:
+            # Perform the search and download
+            print(f"🚀 Starting download of up to {videos_per_tag} CC-licensed videos for tag '{tag}'...")
+            ydl.download([search_query])
+            print(f"✅ Download completed for tag '{tag}'.")
+        except Exception as e:
+            print(f"⚠️ Error downloading videos for tag '{tag}': {e}")
 
 def select_best_clip(clip, duration=10):
     """
@@ -112,7 +98,7 @@ def select_best_clip(clip, duration=10):
     start_time = (clip.duration - duration) / 2
     return clip.subclip(start_time, start_time + duration)
 
-def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resolution=(1920, 1080)):
+def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resolution=(1920, 1080), min_video_duration=15):
     """
     Merges multiple video clips to match the duration of the audio.
 
@@ -120,33 +106,34 @@ def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resol
     :param audio_path: Path to the audio file.
     :param output_path: Path to save the merged video.
     :param target_resolution: Desired resolution for the output video.
+    :param min_video_duration: Minimum duration (in seconds) for a video to be considered valid.
     :return: Path to the merged video.
     """
     video_files = [os.path.join(video_dir, f) for f in os.listdir(video_dir) if f.endswith('.mp4')]
     if not video_files:
-        print("No videos to merge.")
+        print("❌ No videos to merge.")
         return None
-
-    # **Shuffle the video files to randomize the order**
-    random.shuffle(video_files)
-    print("Shuffled the order of video files for merging.")
 
     # Load all video clips and select best subclips
     clips = []
     for vf in video_files:
         try:
             clip = VideoFileClip(vf)
+            if clip.duration < min_video_duration:
+                print(f"⏩ Skipping video '{vf}' as it is shorter than {min_video_duration} seconds.")
+                clip.close()
+                continue
             # Select a 10-second subclip from the middle
             best_clip = select_best_clip(clip, duration=10)
             # Resize to target resolution
             best_clip_resized = best_clip.resize(newsize=target_resolution)
             clips.append(best_clip_resized)
-            print(f"Processed clip: {vf}")
+            print(f"🎬 Processed clip: {vf}")
         except Exception as e:
-            print(f"Error processing video {vf}: {e}")
+            print(f"⚠️ Error processing video '{vf}': {e}")
 
     if not clips:
-        print("No valid clips to merge after processing.")
+        print("❌ No valid clips to merge after processing.")
         return None
 
     # Load audio to get its duration
@@ -154,36 +141,36 @@ def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resol
         audio = AudioFileClip(audio_path)
         audio_duration = audio.duration  # in seconds
         audio.close()
-        print(f"Audio duration: {audio_duration} seconds")
+        print(f"🎵 Audio duration: {audio_duration} seconds")
     except Exception as e:
-        print(f"Error loading audio file {audio_path}: {e}")
+        print(f"⚠️ Error loading audio file '{audio_path}': {e}")
         return None
 
     # Calculate total duration of all clips
     total_clips_duration = sum(clip.duration for clip in clips)
-    print(f"Total duration of available clips: {total_clips_duration} seconds")
+    print(f"🕒 Total duration of available clips: {total_clips_duration} seconds")
 
     if total_clips_duration == 0:
-        print("Total duration of clips is zero. Exiting.")
+        print("❌ Total duration of clips is zero. Exiting.")
         return None
 
     # Determine how many times to loop the clips
     loops = int(audio_duration // total_clips_duration) + 1
-    print(f"Looping video clips {loops} times to exceed audio duration.")
+    print(f"🔁 Looping video clips {loops} times to exceed audio duration.")
 
     # Concatenate clips multiple times
     final_clips = clips * loops
     try:
         concatenated = concatenate_videoclips(final_clips, method='compose')
     except Exception as e:
-        print(f"Error concatenating clips: {e}")
+        print(f"⚠️ Error concatenating clips: {e}")
         return None
 
     # Trim the video to match the audio duration
     try:
         trimmed = concatenated.subclip(0, audio_duration)
     except Exception as e:
-        print(f"Error trimming the concatenated video: {e}")
+        print(f"⚠️ Error trimming the concatenated video: {e}")
         concatenated.close()
         return None
 
@@ -195,14 +182,13 @@ def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resol
             bitrate=FFMPEG_CODEC_PARAMS['bitrate'],
             preset=FFMPEG_CODEC_PARAMS['preset'],
             threads=FFMPEG_CODEC_PARAMS['threads'],
-            # preset_flags=FFMPEG_CODEC_PARAMS.get('preset_flags', None),  # Removed to fix TypeError
             audio=False,
             verbose=True,  # Set to True for more detailed output
             logger='bar'    # You can set it to 'bar', 'tqdm', etc.
         )
-        print(f"Merged and trimmed video saved to {output_path}")
+        print(f"✅ Merged and trimmed video saved to '{output_path}'")
     except Exception as e:
-        print(f"Error writing the merged video file: {e}")
+        print(f"⚠️ Error writing the merged video file: {e}")
     finally:
         trimmed.close()
         concatenated.close()
@@ -239,15 +225,14 @@ def add_audio_to_video(video_path, audio_path, output_path, target_resolution=(1
             bitrate=FFMPEG_CODEC_PARAMS['bitrate'],
             preset=FFMPEG_CODEC_PARAMS['preset'],
             threads=FFMPEG_CODEC_PARAMS['threads'],
-            # preset_flags=FFMPEG_CODEC_PARAMS.get('preset_flags', None),  # Removed to fix TypeError
             audio_codec='aac',
             verbose=True,  # Set to True for more detailed output
             logger='bar'    # You can set it to 'bar', 'tqdm', etc.
         )
 
-        print(f"Final video with audio saved to {output_path}")
+        print(f"✅ Final video with audio saved to '{output_path}'")
     except Exception as e:
-        print(f"Error adding audio to video: {e}")
+        print(f"⚠️ Error adding audio to video: {e}")
     finally:
         video.close()
         audio.close()
@@ -262,27 +247,27 @@ def process_single_mp3(mp3_path, output_video_dir):
     """
     # Extract the tag from the MP3 filename (without extension)
     tag = os.path.splitext(os.path.basename(mp3_path))[0]
-    print(f"\nProcessing MP3: {mp3_path} with tag: '{tag}'")
+    print(f"\n🎧 Processing MP3: '{mp3_path}' with tag: '{tag}'")
 
     # Create a temporary directory for this MP3's video downloads
     temp_dir = os.path.join(TEMP_VIDEO_DIR, tag)
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
-    # Step 1: Search and download videos based on the tag
-    search_and_download_videos(PIXABAY_API_KEY, tag, VIDEOS_PER_TAG, temp_dir)
+    # Step 1: Search and download videos based on the tag using YouTube
+    search_and_download_videos(tag, VIDEOS_PER_TAG, temp_dir)
 
     # Step 2: Merge videos to match the audio length
     merged_video_path = os.path.join(TEMP_VIDEO_DIR, MERGED_VIDEO_TEMPLATE.format(tag))
     merged_video = merge_videos_to_match_audio(temp_dir, mp3_path, merged_video_path)
 
-    if not merged_video or not os.path.exists(merged_video):
-        print(f"Merged video not found for tag '{tag}'. Skipping this MP3.")
+    if not merged_video or not os.path.exists(merged_video_path):
+        print(f"❌ Merged video not found for tag '{tag}'. Skipping this MP3.")
         return
 
     # Step 3: Add audio to the merged video
-    final_output_path = os.path.join(OUTPUT_VIDEO_DIR, FINAL_OUTPUT_TEMPLATE.format(tag))
-    add_audio_to_video(merged_video, mp3_path, final_output_path)
+    final_output_path = os.path.join(output_video_dir, FINAL_OUTPUT_TEMPLATE.format(tag))
+    add_audio_to_video(merged_video_path, mp3_path, final_output_path)
 
     # Cleanup temporary files for this MP3
     try:
@@ -290,9 +275,9 @@ def process_single_mp3(mp3_path, output_video_dir):
         if os.path.exists(merged_video_path):
             os.remove(merged_video_path)
     except Exception as e:
-        print(f"Error during cleanup for tag '{tag}': {e}")
+        print(f"⚠️ Error during cleanup for tag '{tag}': {e}")
 
-    print(f"Completed processing for MP3: {mp3_path}")
+    print(f"✅ Completed processing for MP3: '{mp3_path}'")
 
 def main():
     # Ensure the output_video directory exists
@@ -307,10 +292,10 @@ def main():
     mp3_files = [os.path.join(MP3_FILES_DIR, f) for f in os.listdir(MP3_FILES_DIR) if f.lower().endswith('.mp3')]
 
     if not mp3_files:
-        print(f"No MP3 files found in the directory '{MP3_FILES_DIR}'. Exiting.")
+        print(f"❌ No MP3 files found in the directory '{MP3_FILES_DIR}'. Exiting.")
         return
 
-    print(f"Found {len(mp3_files)} MP3 files. Starting processing...")
+    print(f"\n📂 Found {len(mp3_files)} MP3 file(s). Starting processing...")
 
     # Process each MP3 file sequentially
     for mp3_path in mp3_files:
@@ -321,9 +306,9 @@ def main():
         if os.path.exists(TEMP_VIDEO_DIR) and not os.listdir(TEMP_VIDEO_DIR):
             shutil.rmtree(TEMP_VIDEO_DIR)
     except Exception as e:
-        print(f"Error cleaning up main temporary directory: {e}")
+        print(f"⚠️ Error cleaning up main temporary directory: {e}")
 
-    print("\nAll MP3 files have been processed successfully.")
+    print("\n🎉 All MP3 files have been processed successfully.")
 
 if __name__ == "__main__":
     main()

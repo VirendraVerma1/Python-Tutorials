@@ -4,14 +4,13 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
 import shutil
 import concurrent.futures
 from moviepy.config import change_settings
-import random  # **Added import for shuffling**
 
 # Optional: Specify FFmpeg binary if not in PATH
 # change_settings({"FFMPEG_BINARY": "/path/to/ffmpeg"})
 
 # Configuration
-PIXABAY_API_KEY = '47743649-5733ba1681a60793a017da96b'  # Replace with your Pixabay API Key
-VIDEOS_PER_TAG = 30  # Number of videos to download per tag
+PEXELS_API_KEY = '1nL9vAaAjFa7HCGsJfDL3HIPAkRyDHJFkLLGv7T4QBhaYr0vRdaBrl29'  # Replace with your Pexels API Key
+VIDEOS_PER_TAG = 20  # Number of videos to download per tag
 MP3_FILES_DIR = 'mp3files'  # Directory containing MP3 files
 OUTPUT_VIDEO_DIR = 'output_video'  # Directory to save the final videos
 TEMP_VIDEO_DIR = 'temp_videos'  # Temporary directory for downloaded videos
@@ -30,9 +29,9 @@ FFMPEG_CODEC_PARAMS = {
 
 def search_and_download_videos(api_key, tag, videos_per_tag, download_path):
     """
-    Searches for videos on Pixabay based on a single tag and downloads them.
+    Searches for videos on Pexels based on a single tag and downloads them.
 
-    :param api_key: Pixabay API key.
+    :param api_key: Pexels API key.
     :param tag: Tag to search for.
     :param videos_per_tag: Number of videos to download.
     :param download_path: Directory to save downloaded videos.
@@ -40,41 +39,57 @@ def search_and_download_videos(api_key, tag, videos_per_tag, download_path):
     if not os.path.exists(download_path):
         os.makedirs(download_path)
 
-    base_url = 'https://pixabay.com/api/videos/'
+    base_url = 'https://api.pexels.com/videos/search'
     all_video_urls = []
 
-    params = {
-        'key': api_key,
-        'q': tag,
-        'per_page': videos_per_tag,
-        'safesearch': 'true'
+    headers = {
+        'Authorization': api_key
     }
+
+    per_page = min(videos_per_tag, 80)  # Pexels allows up to 80 per_page
+    total_pages = (videos_per_tag // per_page) + (1 if videos_per_tag % per_page else 0)
+
     print(f"Fetching videos for tag: '{tag}'")
-    response = requests.get(base_url, params=params)
-    print(f"Request URL: {response.url}")
-    if response.status_code != 200:
-        print(f"Failed to fetch videos for tag '{tag}'. Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
-        return
 
-    data = response.json()
-    if 'hits' not in data:
-        print(f"No 'hits' found in the response for tag '{tag}'. Response: {data}")
-        return
+    for page in range(1, total_pages + 1):
+        params = {
+            'query': tag,
+            'per_page': per_page,
+            'page': page
+        }
+        print(f"Requesting page {page} for tag '{tag}'")
+        response = requests.get(base_url, headers=headers, params=params)
+        print(f"Request URL: {response.url}")
+        if response.status_code != 200:
+            print(f"Failed to fetch videos for tag '{tag}'. Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
+            return
 
-    for hit in data.get('hits', []):
-        # Select the video with the highest resolution available
-        videos = hit.get('videos', {})
-        if 'large' in videos:
-            video_url = videos['large']['url']
-        elif 'medium' in videos:
-            video_url = videos['medium']['url']
-        elif 'small' in videos:
-            video_url = videos['small']['url']
-        else:
-            print(f"No suitable video size found for hit ID {hit.get('id')}")
-            continue  # Skip if no suitable video size found
-        all_video_urls.append(video_url)
+        data = response.json()
+        if 'videos' not in data:
+            print(f"No 'videos' found in the response for tag '{tag}'. Response: {data}")
+            return
+
+        for video in data.get('videos', []):
+            video_files = video.get('video_files', [])
+            if not video_files:
+                print(f"No video files found for video ID {video.get('id')}")
+                continue
+
+            # Select the video file with the highest resolution
+            sorted_files = sorted(video_files, key=lambda x: x.get('width', 0), reverse=True)
+            best_video = sorted_files[0]  # Highest resolution
+            video_url = best_video.get('link')
+            if video_url:
+                all_video_urls.append(video_url)
+            else:
+                print(f"No valid URL found for video ID {video.get('id')}")
+
+            if len(all_video_urls) >= videos_per_tag:
+                break
+
+        if len(all_video_urls) >= videos_per_tag:
+            break
 
     if not all_video_urls:
         print(f"No video URLs found for tag '{tag}'. Please check your tags and API key.")
@@ -126,10 +141,6 @@ def merge_videos_to_match_audio(video_dir, audio_path, output_path, target_resol
     if not video_files:
         print("No videos to merge.")
         return None
-
-    # **Shuffle the video files to randomize the order**
-    random.shuffle(video_files)
-    print("Shuffled the order of video files for merging.")
 
     # Load all video clips and select best subclips
     clips = []
@@ -270,19 +281,19 @@ def process_single_mp3(mp3_path, output_video_dir):
         os.makedirs(temp_dir)
 
     # Step 1: Search and download videos based on the tag
-    search_and_download_videos(PIXABAY_API_KEY, tag, VIDEOS_PER_TAG, temp_dir)
+    search_and_download_videos(PEXELS_API_KEY, tag, VIDEOS_PER_TAG, temp_dir)
 
     # Step 2: Merge videos to match the audio length
     merged_video_path = os.path.join(TEMP_VIDEO_DIR, MERGED_VIDEO_TEMPLATE.format(tag))
     merged_video = merge_videos_to_match_audio(temp_dir, mp3_path, merged_video_path)
 
-    if not merged_video or not os.path.exists(merged_video):
+    if not merged_video or not os.path.exists(merged_video_path):
         print(f"Merged video not found for tag '{tag}'. Skipping this MP3.")
         return
 
     # Step 3: Add audio to the merged video
     final_output_path = os.path.join(OUTPUT_VIDEO_DIR, FINAL_OUTPUT_TEMPLATE.format(tag))
-    add_audio_to_video(merged_video, mp3_path, final_output_path)
+    add_audio_to_video(merged_video_path, mp3_path, final_output_path)
 
     # Cleanup temporary files for this MP3
     try:
